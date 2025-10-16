@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="home-hero vh-100 d-flex flex-column justify-content-center align-items-center text-center"
+         style="background: linear-gradient(135deg, #67e8f9, #2563eb); color: white; position: relative; overflow: hidden;">
+
+    <!-- Animated Scene -->
+    <div class="animated-scene mb-4">
+        <img src="{% static 'images/animated_scene.gif' %}" alt="EcoLearn Animation" class="img-fluid" style="max-height:300px;">
+    </div>
+
+    <!-- Project Title -->
+    <h1 class="display-4 fw-bold mb-3">EcoLearn</h1>
+    <p class="lead mb-4" style="max-width:600px;">
+        Gamified Environmental Education for Sustainable Futures. Learn, play, and take real-world eco-actions!
+    </p>
+
+    <!-- Get Started Button -->
+    <a href="{% url 'login' %}" class="btn btn-lg btn-light text-primary fw-bold mb-3">Get Started</a>
+
+    <!-- Admin Login -->
+    <p><a href="{% url 'login' %}" class="text-white text-decoration-underline">Admin Login</a></p>
+
+    <!-- About Section -->
+    <div class="mt-4" style="max-width:700px;">
+        <h4>About EcoLearn</h4>
+        <p>
+            EcoLearn is an interactive platform that teaches environmental awareness through gamification.
+            Students can learn, play classification games, take quizzes, and earn points while teachers
+            monitor their progress. Join us to build sustainable habits!
+        </p>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="mt-4">
+        <p>Contact: <a href="mailto:info@ecolearn.com" style="color:white; text-decoration:underline;">info@ecolearn.com</a></p>
+    </div>
+
+</section>
+
+<style>
+.home-hero {
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.animated-scene img {
+    animation: floatScene 4s ease-in-out infinite;
+}
+
+@keyframes floatScene {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    transition: all 0.3s ease-in-out;
+}
+</style>
+{% endblock %}

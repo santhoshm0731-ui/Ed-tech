@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Teacher Dashboard</h3>
+  <p>Students in your school sorted by points:</p>
+  <table class="table table-striped">
+    <thead>
+      <tr><th>Username</th><th>Year</th><th>Points</th><th>Level</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.user.username }}</td>
+        <td>{{ s.year }}</td>
+        <td>{{ s.points }}</td>
+        <td>{{ s.current_level }}</td>
+        <td>
+          <!-- In a full app you'd add links to edit/deactivate -->
+          <form method="post" action="{% url 'admin:accounts_studentprofile_change' s.id %}">
+            {% csrf_token %}
+            <a class="btn btn-sm btn-outline-primary" href="#">View</a>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
