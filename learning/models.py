@@ -1,26 +1,28 @@
-#learning/models.py
+from django.db import models
 
+# models.py
 from django.db import models
 
 class Level(models.Model):
     number = models.PositiveIntegerField()
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    required_points = models.PositiveIntegerField(default=0)
-    video_url = models.URLField(blank=True)  # can be YouTube embed or local media
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    video_file = models.FileField(upload_to='videos/', blank=True, null=True)
 
-    class Meta:
-        ordering = ['number']
+    def required_points(self):
+        return self.number * 100
 
     def __str__(self):
         return f"Level {self.number} - {self.title}"
 
+
 class Quiz(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='quizzes')
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"Quiz: {self.title} (Level {self.level.number})"
+        return self.title
+
 
 class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')

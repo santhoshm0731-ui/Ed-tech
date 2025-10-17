@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card p-4 shadow-lg border-0 rounded-4">
+        <h3 class="mb-3 text-center text-primary">Teacher Registration</h3>
+        <p class="text-muted text-center">Only one teacher per school can register as admin.</p>
+
+        <form method="post">
+          {% csrf_token %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label>Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="text-danger">{{ form.username.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label>Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="text-danger">{{ form.email.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label>Password</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+              <div class="text-danger">{{ form.password1.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label>Confirm Password</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+              <div class="text-danger">{{ form.password2.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label>School</label>
+            {{ form.school }}
+            {% if form.school.errors %}
+              <div class="text-danger">{{ form.school.errors }}</div>
+            {% endif %}
+          </div>
+
+          <button class="btn btn-success w-100" type="submit">Register as Teacher</button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="{% url 'login' %}" class="text-decoration-none">Already have an account? Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

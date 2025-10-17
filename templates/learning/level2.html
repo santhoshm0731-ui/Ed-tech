@@ -1,78 +1,149 @@
-{% extends 'base.html' %}
 {% load static %}
-{% block content %}
-<div class="container py-4">
-  <h3>{{ level.title }}</h3>
-  <p>{{ level.description }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 2 - Waste Segregation</title>
+<style>
+body { font-family: Arial; background:#d0f0c0; margin:0; padding:20px; display:flex; flex-direction: column; align-items:center; }
+.video-container { margin-bottom: 30px; }
+.quiz-container { display: none; background:white; padding:25px 30px; border-radius:10px; box-shadow:0 0 15px rgba(0,128,0,0.3); max-width:600px; width:100%; color:#2e7d32; }
+h1 { text-align:center; margin-bottom:20px; }
+.question { font-size:1.2em; margin-bottom:15px; }
+.options { list-style:none; padding:0; }
+.options li { margin-bottom:10px; }
+button.option-btn { width:100%; padding:10px; font-size:1em; border:2px solid #4caf50; border-radius:5px; background:#a5d6a7; color:#1b5e20; cursor:pointer; }
+button.option-btn:hover { background:#81c784; }
+#next-btn, #restart-btn { margin-top:20px; padding:10px 20px; font-size:1.1em; background-color:#388e3c; color:white; border:none; border-radius:6px; cursor:pointer; display:none; }
+#next-btn:hover, #restart-btn:hover { background-color:#2e7d32; }
+#score-container { font-size:1.3em; text-align:center; margin-top:25px; }
+#feedback.correct { color: #4caf50; font-weight:bold; margin-top:10px; }
+#feedback.wrong { color: #f44336; font-weight:bold; margin-top:10px; }
+#explanation { margin-top:10px; font-style:italic; color:#555; }
+</style>
+</head>
+<body>
 
-  <div class="row">
-    <div class="col-md-6">
-      <div class="ratio ratio-16x9 mb-3">
-        {% if level.video_url %}
-          <iframe src="{{ level.video_url }}" title="Level 2 Video" allowfullscreen></iframe>
-        {% else %}
-          <div class="d-flex align-items-center justify-content-center" style="height:300px;background:#f5f5f5;">
-            <p class="text-muted">Video placeholder. Upload video in admin or set Level.video_url</p>
-          </div>
-        {% endif %}
-      </div>
+<div class="video-container">
+    <video id="level-video" controls width="600">
+        <source src="{% static 'videos/waste.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
 
-      <h5>Classification Game</h5>
-      <p>Drag the items into the correct dustbin on the right. Earn points for correct classifications.</p>
-
-      <div id="items" class="d-flex flex-wrap" style="gap:10px;"></div>
-    </div>
-
-    <div class="col-md-6">
-      <h5>Dustbins</h5>
-      <div id="bins" class="d-flex flex-column" style="gap:15px;">
-        <div class="bin" data-bin="wet" style="padding:20px;border:2px dashed #6c757d;min-height:80px" data-bin-label="Wet Waste">Wet Waste</div>
-        <div class="bin" data-bin="dry" style="padding:20px;border:2px dashed #6c757d;min-height:80px" data-bin-label="Dry Waste">Dry Waste</div>
-        <div class="bin" data-bin="recycle" style="padding:20px;border:2px dashed #6c757d;min-height:80px" data-bin-label="Recyclables">Recyclables</div>
-      </div>
-
-      <div class="mt-3">
-        <button id="submitGame" class="btn btn-success">Submit Game</button>
-        <p class="mt-2">Score: <span id="gameScore">0</span></p>
-      </div>
-
-      {% if quiz %}
-        <hr>
-        <h5>Quiz</h5>
-        <form id="quizForm">
-          {% csrf_token %}
-          {% for q in quiz.questions.all %}
-            <div class="mb-3">
-              <p><strong>{{ forloop.counter }}. {{ q.text }}</strong></p>
-              {% for c in q.choices.all %}
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="c_{{ c.id }}" value="{{ c.id }}">
-                  <label class="form-check-label" for="c_{{ c.id }}">{{ c.text }}</label>
-                </div>
-              {% endfor %}
-              <div class="mt-2 text-muted" id="explain_{{ q.id }}" style="display:none"></div>
-            </div>
-          {% endfor %}
-          <button type="button" id="submitQuiz" class="btn btn-primary">Submit Quiz</button>
-        </form>
-      {% endif %}
-    </div>
-  </div>
+<div class="quiz-container" id="quiz-container">
+    <h1>Waste Segregation Quiz</h1>
+    <div id="question" class="question"></div>
+    <ul id="options" class="options"></ul>
+    <div id="feedback"></div>
+    <div id="explanation"></div>
+    <button id="next-btn">Next Question</button>
+    <button id="restart-btn">Restart Quiz</button>
+    <div id="score-container"></div>
 </div>
 
 <script>
-  // We rely on static/js/level2_game.js; minimal inline initialization for template variables
-  const ITEMS_FOR_GAME = [
-    {id: 'i1', label: 'Apple core', bin: 'wet'},
-    {id: 'i2', label: 'Plastic bottle', bin: 'recycle'},
-    {id: 'i3', label: 'Paper', bin: 'dry'},
-    {id: 'i4', label: 'Tea leaves', bin: 'wet'},
-    {id: 'i5', label: 'Glass jar', bin: 'recycle'}
-  ];
+const quizQuestions = [
+    {question:"Which bin should banana peels be disposed in?", options:["Organic Waste","Recyclable Waste","Hazardous Waste","E-waste"], answer:"Organic Waste", explanation:"Banana peels are biodegradable and belong in the organic waste bin."},
+    {question:"Where should plastic bottles be placed?", options:["Organic Waste","Recyclable Waste","Hazardous Waste","Landfill"], answer:"Recyclable Waste", explanation:"Plastic bottles can be recycled and should go in the recyclable bin."},
+    {question:"Batteries should be disposed in?", options:["Organic Waste","Recyclable Waste","Hazardous Waste","Compost"], answer:"Hazardous Waste", explanation:"Batteries contain harmful chemicals and are classified as hazardous waste."},
+    {question:"Where do used syringes belong?", options:["Hazardous Waste","Recyclable Waste","Organic Waste","Plastic Bin"], answer:"Hazardous Waste", explanation:"Used syringes are biohazardous and need special disposal in hazardous waste."}
+];
 
-  // Provide URLs for AJAX
-  window.ECO_CONFIG = {
-    awardPointsUrl: "{% url 'award_points' %}"
-  };
+const quizContainer = document.getElementById('quiz-container');
+const questionEl = document.getElementById('question');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const explanationEl = document.getElementById('explanation');
+const nextBtn = document.getElementById('next-btn');
+const restartBtn = document.getElementById('restart-btn');
+const scoreContainer = document.getElementById('score-container');
+
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+
+function loadQuestion() {
+    answered = false;
+    nextBtn.style.display = 'none';
+    feedbackEl.textContent = '';
+    feedbackEl.className = '';
+    explanationEl.textContent = '';
+    scoreContainer.textContent = '';
+    const currentQ = quizQuestions[currentIndex];
+    questionEl.textContent = `Q${currentIndex + 1}. ${currentQ.question}`;
+    optionsEl.innerHTML = '';
+    currentQ.options.forEach(option => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = option;
+        btn.onclick = () => selectAnswer(btn, option);
+        li.appendChild(btn);
+        optionsEl.appendChild(li);
+    });
+}
+
+function selectAnswer(button, selectedOption) {
+    if (answered) return;
+    answered = true;
+    const correct = quizQuestions[currentIndex].answer;
+    const explanation = quizQuestions[currentIndex].explanation;
+    if (selectedOption === correct) {
+        button.style.backgroundColor = '#4caf50';
+        feedbackEl.textContent = 'Correct!';
+        feedbackEl.className = 'correct';
+        score++;
+    } else {
+        button.style.backgroundColor = '#f44336';
+        feedbackEl.textContent = 'Wrong!';
+        feedbackEl.className = 'wrong';
+        Array.from(optionsEl.children).forEach(li => {
+            if (li.firstChild.textContent === correct) li.firstChild.style.backgroundColor = '#4caf50';
+        });
+    }
+    explanationEl.textContent = explanation;
+    nextBtn.style.display = 'inline-block';
+}
+
+nextBtn.onclick = () => {
+    currentIndex++;
+    if (currentIndex < quizQuestions.length) loadQuestion();
+    else finishLevel();
+};
+
+restartBtn.onclick = () => {
+    currentIndex = 0;
+    score = 0;
+    restartBtn.style.display = 'none';
+    loadQuestion();
+};
+
+function finishLevel() {
+    questionEl.textContent = 'Congratulations! Level completed.';
+    optionsEl.innerHTML = '';
+    feedbackEl.textContent = '';
+    explanationEl.textContent = '';
+    nextBtn.style.display = 'none';
+    scoreContainer.textContent = `You scored ${score} out of ${quizQuestions.length}!`;
+
+    // Call Django to mark level complete
+    fetch("{% url 'complete_level' 2 %}", {method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'ok') {
+            // Redirect to next level automatically
+            window.location.href = `/level/3/`;
+        }
+    });
+}
+
+// Show quiz after video ends
+document.getElementById('level-video').addEventListener('ended', () => {
+    quizContainer.style.display = 'block';
+    loadQuestion();
+});
 </script>
-{% endblock %}
+</body>
+</html>

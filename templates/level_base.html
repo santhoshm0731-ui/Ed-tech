@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="level-container">
+    <h1>{{ level.title }}</h1>
+
+    <!-- Video -->
+    <video id="level-video" width="800" controls>
+        <source src="{% static video_src %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Quiz (hidden initially) -->
+    <div id="quiz-container" style="display:none;">
+        <h2>{{ level.title }} Quiz</h2>
+        <div id="question"></div>
+        <ul id="options"></ul>
+        <div id="feedback"></div>
+        <div id="explanation"></div>
+        <button id="next-btn" style="display:none;">Next Level</button>
+    </div>
+</div>
+
+<script>
+const video = document.getElementById('level-video');
+const quizContainer = document.getElementById('quiz-container');
+const nextBtn = document.getElementById('next-btn');
+
+video.onended = () => { quizContainer.style.display = 'block'; };
+
+// Quiz logic
+const quizQuestions = {{ quiz_questions|safe }};
+
+let currentIndex = 0;
+let answered = false;
+
+const questionEl = document.getElementById('question');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const explanationEl = document.getElementById('explanation');
+
+function loadQuestion() {
+    answered = false;
+    feedbackEl.textContent = '';
+    explanationEl.textContent = '';
+    optionsEl.innerHTML = '';
+    const currentQ = quizQuestions[currentIndex];
+    questionEl.textContent = `Q${currentIndex+1}: ${currentQ.question}`;
+    currentQ.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => selectAnswer(btn, opt);
+        optionsEl.appendChild(btn);
+    });
+}
+
+function selectAnswer(btn, selectedOption) {
+    if(answered) return;
+    answered = true;
+    const correct = quizQuestions[currentIndex].answer;
+    explanationEl.textContent = quizQuestions[currentIndex].explanation;
+    if(selectedOption === correct){
+        btn.style.backgroundColor = '#4caf50';
+    } else {
+        btn.style.backgroundColor = '#f44336';
+        Array.from(optionsEl.children).forEach(b=>{
+            if(b.textContent===correct) b.style.backgroundColor='#4caf50';
+        });
+    }
+    currentIndex++;
+    if(currentIndex < quizQuestions.length){
+        setTimeout(loadQuestion, 500);
+    } else {
+        nextBtn.style.display = 'inline-block';
+        // Mark level completed
+        fetch("", {method:"POST", headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+          .then(res => console.log("Level completed!"));
+    }
+}
+
+loadQuestion();
+
+nextBtn.onclick = () => {
+    window.location.href = "{% url 'level_view' level.number|add:'1' %}";
+};
+</script>
+{% endblock %}

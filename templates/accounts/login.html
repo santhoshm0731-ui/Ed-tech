@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
@@ -6,55 +6,44 @@
   <div class="row justify-content-center">
     <div class="col-md-5">
       <div class="card p-4 shadow-sm">
-        <h3 class="mb-3 text-center">Login</h3>
-        <p class="text-center text-muted">Choose your login type</p>
+        <h3 class="text-center mb-4">Login</h3>
 
-        <!-- Tabs for Student / Teacher Login -->
-        <ul class="nav nav-tabs mb-3" id="loginTab" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="student-tab" data-bs-toggle="tab" data-bs-target="#student" type="button" role="tab">Student</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher" type="button" role="tab">Teacher</button>
-          </li>
-        </ul>
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
 
-        <div class="tab-content" id="loginTabContent">
-          <!-- Student Login -->
-          <div class="tab-pane fade show active" id="student" role="tabpanel">
-            <form method="post">
-              {% csrf_token %}
-              <div class="mb-2">
-                <label>Username</label>
-                <input class="form-control" name="username" />
-              </div>
-              <div class="mb-2">
-                <label>Password</label>
-                <input class="form-control" name="password" type="password" />
-              </div>
-              <input type="hidden" name="role" value="student">
-              <button class="btn btn-primary w-100 mt-2" type="submit">Login as Student</button>
-            </form>
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" required>
           </div>
 
-          <!-- Teacher Login -->
-          <div class="tab-pane fade" id="teacher" role="tabpanel">
-            <form method="post">
-              {% csrf_token %}
-              <div class="mb-2">
-                <label>Username</label>
-                <input class="form-control" name="username" />
-              </div>
-              <div class="mb-2">
-                <label>Password</label>
-                <input class="form-control" name="password" type="password" />
-              </div>
-              <input type="hidden" name="role" value="teacher">
-              <button class="btn btn-primary w-100 mt-2" type="submit">Login as Teacher</button>
-            </form>
+          <div class="mb-3">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" required>
           </div>
+
+          <!-- User type selection -->
+          <div class="mb-3">
+            <label>User Type</label>
+            <select name="user_type" class="form-control" required>
+              <option value="">Select</option>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <div class="mt-3 text-center">
+          <a href="{% url 'signup' %}">Student Sign Up</a> |
+          <a href="{% url 'teacher_signup' %}">Teacher Sign Up</a>
         </div>
-
       </div>
     </div>
   </div>
